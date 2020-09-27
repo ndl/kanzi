@@ -241,6 +241,13 @@ public final class DebugInputBitStream implements InputBitStream
 
 
    @Override
+   public synchronized long skip(long n) throws BitStreamException
+   {
+      return this.delegate.skip(n);
+   }
+
+
+   @Override
    public void close() throws BitStreamException
    {
       this.delegate.close();

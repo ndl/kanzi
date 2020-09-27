@@ -31,6 +31,9 @@ public interface InputBitStream
    // Throws if the stream is closed.
    public int readBits(byte[] bits, int start, int length) throws BitStreamException;
 
+   // Skips given number of bits.
+   public long skip(long n) throws BitStreamException;
+
    public void close() throws BitStreamException;
 
    // Number of bits read

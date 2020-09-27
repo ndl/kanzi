@@ -200,7 +200,6 @@ public final class DefaultInputBitStream implements InputBitStream
       return count;
    }
 
-   
    // Pull 64 bits of current value from buffer.
    private void pullCurrent()
    {
@@ -231,7 +230,42 @@ public final class DefaultInputBitStream implements InputBitStream
       }       
    }
 
-   
+   @Override
+   public long skip(long n) throws BitStreamException
+   {
+      long remaining = n;
+      if (remaining <= this.availBits)
+      {
+         this.availBits -= remaining;
+	 this.read += remaining;
+	 return n;
+      }
+      remaining -= this.availBits;
+      this.read += this.availBits;
+      this.availBits = 0;
+      long skippedBytes = Math.min(this.maxPosition + 1 - this.position, remaining >> 3);
+      this.position += skippedBytes;
+      this.read += skippedBytes << 3;
+      remaining -= skippedBytes << 3;
+      if (this.position > this.maxPosition)
+      {
+         // We're at the end of the buffer and still need to skip further.
+	 try
+	 {
+            this.is.skip(remaining >> 3);
+	 }
+	 catch (IOException e)
+	 {
+            throw new BitStreamException(e.getMessage(), BitStreamException.INPUT_OUTPUT);
+	 }
+	 this.read += remaining & ~0x07l;
+	 remaining = remaining & 0x07l;
+      }
+      this.pullCurrent();
+      this.availBits -= remaining;
+      return n;
+   }
+
    @Override
    public void close()
    {
